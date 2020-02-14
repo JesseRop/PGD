@@ -1,5 +1,5 @@
 ---
-title: "rbc_only_comprehensive_manuscript_120519"
+title: "rbc_only_comprehensive_manuscript_14022020"
 author: "Jesse Rop"
 date: "December 5, 2019"
 output:
@@ -1001,7 +1001,7 @@ pgd_cbc_vs_rbcpol_mvrt_rgrs = function(cbc_array, malariapositive, age_at_collec
   for (j in 1:length(cbc_array)) {
     cat('###',cbc_array[j], ' \n')
     
-    b = pgd_genopheno_01042018[ , c (rbc_polymorphism, age_at_collection_years, "sex", malariapositive, cbc_array[j])]
+    b = pgd_genopheno_01042018[ , c (rbc_polymorphism, age_at_collection_years, "sex", malariapositive, "ethnic", cbc_array[j])]
     
     #cat("tukeyHSD____________________________________________________________ \n")
     ##tukeyHSD for comparison of each cbc trait between all possible groups per rbc polmorphism
@@ -1014,6 +1014,7 @@ pgd_cbc_vs_rbcpol_mvrt_rgrs = function(cbc_array, malariapositive, age_at_collec
     pander(summary(lm(as.formula(paste(cbc_array[j], "~", colnames(b)[5] )), data = b)),add.significance.stars = T)
     pander(confint(lm(as.formula(paste(cbc_array[j], "~", colnames(b)[5] )), data = b), level = 0.95))
     pander(summary(lm(as.formula(paste(cbc_array[j], "~", colnames(b)[6] )), data = b)),add.significance.stars = T)
+    pander(summary(lm(as.formula(paste(cbc_array[j], "~", colnames(b)[7] )), data = b)),add.significance.stars = T)
 
     cat(' \n \n')
  
@@ -1173,7 +1174,7 @@ pgd_g6pdenzyme_vs_rbc_polymorphism_n_age_of_children = function(cbc_array, malar
     
       cat('####', rbc_polymorphism[i], '+ malaria +ve', ' \n')
 
-        b = pgd_genopheno_01042018[, c ("g6pd_202_rtpcr", "thal", "sickle" , age_at_collection_years, ed[j], malariapositive, rbc_polymorphism[i], "sex")]
+        b = pgd_genopheno_01042018[, c ("g6pd_202_rtpcr", "thal", "sickle" , age_at_collection_years, ed[j], malariapositive, rbc_polymorphism[i], "sex", "ethnic")]
         ##Shapiro to check for normality of ughb and fligner to check for equality of variance
         pander(shapiro.test(b[,ed[j]]),add.significance.stars = T)
         pander(shapiro.test(b[b[,malariapositive]=="no_malaria",ed[j]]),add.significance.stars = T)
@@ -1191,9 +1192,9 @@ pgd_g6pdenzyme_vs_rbc_polymorphism_n_age_of_children = function(cbc_array, malar
         pander(confint(lm(b[,ed[j]] ~ b[,rbc_polymorphism[i]]), level=0.95))
         pander(pgd_genopheno_01042018 %>% filter(!is.na(!!ed_q[[j]]) & !is.na(!!rbc_polymorphism_q[[i]])) %>% count(!!rbc_polymorphism_q[[i]]))
         
-        pander(summary(lm(as.formula(paste(ed[j], "~",  rbc_polymorphism[i], "+", age_at_collection_years)), data = b),add.significance.stars = T))
-        pander(confint(lm(as.formula(paste(ed[j], "~",  rbc_polymorphism[i], "+", age_at_collection_years)), data = b), level=0.95))
-        pander(kable(emmeans(lm(as.formula(paste(ed[j], "~",  rbc_polymorphism[i], "+", age_at_collection_years)), data = b) , rbc_polymorphism[i] )))
+        pander(summary(lm(as.formula(paste(ed[j], "~",  rbc_polymorphism[i], "+", age_at_collection_years, "+", "ethnic")), data = b),add.significance.stars = T))
+        pander(confint(lm(as.formula(paste(ed[j], "~",  rbc_polymorphism[i], "+", age_at_collection_years, "+", "ethnic")), data = b), level=0.95))
+        pander(kable(emmeans(lm(as.formula(paste(ed[j], "~",  rbc_polymorphism[i], "+", age_at_collection_years, "+", "ethnic")), data = b) , rbc_polymorphism[i] )))
         
         pander(pgd_genopheno_01042018 %>% filter(!is.na(!!ed_q[[j]]) & !is.na(!!rbc_polymorphism_q[[i]])) %>% count(!!rbc_polymorphism_q[[i]]))
         
@@ -1208,6 +1209,10 @@ pgd_g6pdenzyme_vs_rbc_polymorphism_n_age_of_children = function(cbc_array, malar
   pander(summary(lm(as.formula(paste(ed[j],"~", "sex")), data = b)),add.significance.stars = T)
   pander(confint(lm(as.formula(paste(ed[j],"~", "sex")), data = b), level=0.95))
   pander(pgd_genopheno_01042018 %>% filter(!is.na(!!ed_q[[j]]) & !is.na(sex)) %>% count(sex))
+  
+  pander(summary(lm(as.formula(paste(ed[j],"~", "ethnic")), data = b)),add.significance.stars = T)
+  pander(confint(lm(as.formula(paste(ed[j],"~", "ethnic")), data = b), level=0.95))
+  pander(pgd_genopheno_01042018 %>% filter(!is.na(!!ed_q[[j]]) & !is.na(ethnic)) %>% count(ethnic))
   
   pander(summary(lm(as.formula(paste(ed[j],"~", malariapositive)), data = b)),add.significance.stars = T)
   pander(confint(lm(as.formula(paste(ed[j],"~", malariapositive)), data = b), level=0.95))
@@ -1233,11 +1238,11 @@ pander(kruskal.test(pgd_genopheno_01042018[pgd_genopheno_01042018[,"thal"] == "N
 cat(' \n \n')
 
 ##Association between ughb and g6pd202 acounting for thal, age, mcv
-pander(summary(lm(as.formula(paste("u_ghb3", "~", "g6pd_202_rtpcr", "+", "thal", "+", age_at_collection_years, "+","mcv_2010")), data = pgd_genopheno_01042018)),add.significance.stars = T)
-pander(confint(lm(as.formula(paste("u_ghb3", "~","g6pd_202_rtpcr", "+", "thal", "+", age_at_collection_years, "+","mcv_2010")), data = pgd_genopheno_01042018), level=0.95))
-pander(kable(emmeans(lm(as.formula(paste("u_ghb3", "~", "g6pd_202_rtpcr", "+", "thal", "+", age_at_collection_years,  "+","mcv_2010")), data = pgd_genopheno_01042018) , "g6pd_202_rtpcr" , by = "thal" )))
+pander(summary(lm(as.formula(paste("u_ghb3", "~", "g6pd_202_rtpcr", "+", "thal", "+", age_at_collection_years, "+", "ethnic", "+","mcv_2010")), data = pgd_genopheno_01042018)),add.significance.stars = T)
+pander(confint(lm(as.formula(paste("u_ghb3", "~","g6pd_202_rtpcr", "+", "thal", "+", age_at_collection_years, "+", "ethnic", "+","mcv_2010")), data = pgd_genopheno_01042018), level=0.95))
+pander(kable(emmeans(lm(as.formula(paste("u_ghb3", "~", "g6pd_202_rtpcr", "+", "thal", "+", age_at_collection_years, "+", "ethnic",  "+","mcv_2010")), data = pgd_genopheno_01042018) , "g6pd_202_rtpcr" , by = "thal" )))
 par(mfrow = c(2,2), mar = c(2,3,1.5,0.5))
-plot(lm(as.formula(paste("u_ghb3", "~", "g6pd_202_rtpcr", "+", "thal", "+", age_at_collection_years, "+","mcv_2010")), data = pgd_genopheno_01042018))
+plot(lm(as.formula(paste("u_ghb3", "~", "g6pd_202_rtpcr", "+", "thal", "+", age_at_collection_years, "+", "ethnic", "+","mcv_2010")), data = pgd_genopheno_01042018))
 cat(' \n \n')
 
 ##Association between urcc and g6pd202 acounting for thal, age, mcv, and hgb
@@ -1270,7 +1275,7 @@ pgd_cbc_vs_rbcpol_wambua = function(cbc_array, malariapositive, age_at_collectio
           for (m in 1:length(ed)) {
             if( ed[m] == "u_rcc"){
             cat('####', ed[m], ' \n')
-            b = pgd_genopheno_01042018[pgd_genopheno_01042018[,rbc_polymorphism[k]] == gtype[l], c ( rbc_polymorphism[-k], age_at_collection_years, "sex", "mcv_2010", "hgb_2010", ed[m])]
+            b = pgd_genopheno_01042018[pgd_genopheno_01042018[,rbc_polymorphism[k]] == gtype[l], c ( rbc_polymorphism[-k], age_at_collection_years, "sex", "mcv_2010", "hgb_2010", "ethnic", ed[m])]
             
             
             cat(paste( rbc_polymorphism[k], "_", gtype[l], "ENZYME ACTIVITY_______hgb__________ENZYME ACTIVITY________________hgb"))
@@ -1306,7 +1311,7 @@ pgd_cbc_vs_rbcpol_wambua = function(cbc_array, malariapositive, age_at_collectio
             }
             else{
             cat('####', ed[m], ' \n')
-            b = pgd_genopheno_01042018[ pgd_genopheno_01042018[,rbc_polymorphism[k]] == gtype[l], c ( rbc_polymorphism[-k], age_at_collection_years, "sex","mcv_2010", "hgb_2010",ed[m])]
+            b = pgd_genopheno_01042018[ pgd_genopheno_01042018[,rbc_polymorphism[k]] == gtype[l], c ( rbc_polymorphism[-k], age_at_collection_years, "sex","mcv_2010", "hgb_2010", "ethnic", ed[m])]
             
             cat(paste( rbc_polymorphism[k], "_", gtype[l], "ENZYME ACTIVITY_______rcc__________ENZYME ACTIVITY________________rcc"))
             cat(' \n')
@@ -1346,7 +1351,7 @@ pgd_cbc_vs_rbcpol_wambua = function(cbc_array, malariapositive, age_at_collectio
       cat(' \n')
     
   for (z in 1:length(gtype)){    
-          b = pgd_genopheno_01042018[ pgd_genopheno_01042018[,"g6pd_202_rtpcr"] == gtype[z], c ("thal", age_at_collection_years, "sex","hgb_2010", "mcv_2010", "rbc_2010", "mchc_2010", "u_ghb3") ]
+          b = pgd_genopheno_01042018[ pgd_genopheno_01042018[,"g6pd_202_rtpcr"] == gtype[z], c ("thal", age_at_collection_years, "sex","hgb_2010", "mcv_2010", "rbc_2010", "mchc_2010", "ethnic", "u_ghb3") ]
           cat(paste( "g6pd202", "_", gtype[z], "________________________________________________________________ "))
           cat(' \n')
           
@@ -1410,7 +1415,7 @@ pgd_cbc_vs_rbcpol_wambua = function(cbc_array, malariapositive, age_at_collectio
     
     ##HETEROZYGOUS FOR G6PD DEFICIENCY
     
-    b = pgd_genopheno_01042018[ pgd_genopheno_01042018[,"g6pd_202_rtpcr"]=='HET', c (rbc_polymorphism[c(2,3)], age_at_collection_years,  cbc_array[j])]
+    b = pgd_genopheno_01042018[ pgd_genopheno_01042018[,"g6pd_202_rtpcr"]=='HET', c (rbc_polymorphism[c(2,3)], age_at_collection_years, "ethnic",  cbc_array[j])]
     cat("lm g6pd_202_rtpcr==HET________________________________________________________________ \n")
     ##linear regression model testing for significant difference in each of the cbc traits by genotypes of each rbc polymorphism trait
     pander(summary(lm(as.formula(paste(cbc_array[j], "~", paste(colnames(b[-c(length(b),2)]), collapse = "+") )), data = b)),add.significance.stars = T)
@@ -1446,7 +1451,7 @@ pgd_cbc_vs_rbcpol_wambua = function(cbc_array, malariapositive, age_at_collectio
       if( ed[k] == "u_rcc"){
       cat('###', ed[k], ' \n')
       
-      b = pgd_genopheno_01042018[ pgd_genopheno_01042018[,"g6pd_202_rtpcr"]=='HET', c (rbc_polymorphism[c(2,3)], age_at_collection_years, "rbc_2010", "hgb_2010", ed[k])]
+      b = pgd_genopheno_01042018[ pgd_genopheno_01042018[,"g6pd_202_rtpcr"]=='HET', c (rbc_polymorphism[c(2,3)], age_at_collection_years, "rbc_2010", "hgb_2010", "ethnic", ed[k])]
       
       cat("lm g6pd_202_rtpcr==HET ENZYME ACTIVITY_______hgb__________ENZYME ACTIVITY________________hgb \n")
       ##linear regression model testing for significant difference in each of the cbc traits by genotypes of each rbc polymorphism trait
@@ -1505,7 +1510,7 @@ pgd_cbc_vs_rbcpol_wambua = function(cbc_array, malariapositive, age_at_collectio
     cat(' \n \n')
 
       tryCatch({
-          b = pgd_genopheno_01042018[ pgd_genopheno_01042018[,"g6pd_202_rtpcr"] == "HET", c ("thal", age_at_collection_years, "hgb_2010", "mcv_2010", "rbc_2010", "mchc_2010", "u_ghb3") ]
+          b = pgd_genopheno_01042018[ pgd_genopheno_01042018[,"g6pd_202_rtpcr"] == "HET", c ("thal", age_at_collection_years, "hgb_2010", "mcv_2010", "rbc_2010", "mchc_2010", "ethnic", "u_ghb3") ]
           cat(paste( "g6pd202", "_", "HET", "________________________________________________________________ "))
           cat(' \n')
           
@@ -1672,7 +1677,7 @@ for (h in 1:length(cbc_array)) {
       
       ##Boxplot with cbc grouped by 2 rbc polymorphisms
       print(cbc_rbcpol_gg + geom_boxplot(aes_string(fill = rev(rbc_polymorphism[-i])[j]), position = position_dodge(0.9)) + scale_fill_manual(values = c("#999999", "#E69F00", "#20a2ee" )))
-      print(ggplot(pgd_genopheno_01042018[!is.na(pgd_genopheno_01042018[,rbc_polymorphism[i]]) & !is.na(pgd_genopheno_01042018[,rbc_polymorphism[rbc_polymorphism != paste(rev(rbc_polymorphism[-i])[j]) & rbc_polymorphism != paste(rbc_polymorphism[i])]]) & !is.na(pgd_genopheno_01042018[,rev(rbc_polymorphism[-i])[j]]),], aes_string(rbc_polymorphism[i], cbc_array[h], shape = rev(rbc_polymorphism[-i])[j], size = rev(rbc_polymorphism[-i])[j])) + stat_summary( fun.data = "median_hillow"  , position = position_dodge(0.6), geom="pointrange") + scale_shape_manual(values = c(15, 16, 17) ) + scale_size_manual( values=c(0.8,0.8,0.8)) + guides(shape="none", size = "none") + coord_cartesian(ylim = c(rbccbc_limits[1,h], rbccbc_limits[2,h])) + ylab(rbccbc_ylabels[h]) + xlab(rbccbc_x_mainlab[i]) + scale_x_discrete(labels= c(rbccbc_xlabels[1, i], rbccbc_xlabels[2, i], rbccbc_xlabels[3, i])) + scale_fill_discrete(labels= c(rbccbc_xlabels[1,rev(c(1,2,3)[-i])[j]], rbccbc_xlabels[2,rev(c(1,2,3)[-i])[j]], rbccbc_xlabels[3,rev(c(1,2,3)[-i])[j]]))  + theme_bw(base_size = 13)+  theme(axis.text.x = element_text( size = 12), axis.text.y = element_text( size = 12)))
+      print(ggplot(pgd_genopheno_01042018[!is.na(pgd_genopheno_01042018[,rbc_polymorphism[i]]) & !is.na(pgd_genopheno_01042018[,rbc_polymorphism[rbc_polymorphism != paste(rev(rbc_polymorphism[-i])[j]) & rbc_polymorphism != paste(rbc_polymorphism[i])]]) & !is.na(pgd_genopheno_01042018[,rev(rbc_polymorphism[-i])[j]]),], aes_string(rbc_polymorphism[i], cbc_array[h], shape = rev(rbc_polymorphism[-i])[j], size = rev(rbc_polymorphism[-i])[j])) + stat_summary( fun.data = "mean_se"  , position = position_dodge(0.6), geom="pointrange") + scale_shape_manual(values = c(15, 16, 17) ) + scale_size_manual( values=c(0.8,0.8,0.8)) + guides(shape="none", size = "none") + coord_cartesian(ylim = c(rbccbc_limits[1,h], rbccbc_limits[2,h])) + ylab(rbccbc_ylabels[h]) + xlab(rbccbc_x_mainlab[i]) + scale_x_discrete(labels= c(rbccbc_xlabels[1, i], rbccbc_xlabels[2, i], rbccbc_xlabels[3, i])) + scale_fill_discrete(labels= c(rbccbc_xlabels[1,rev(c(1,2,3)[-i])[j]], rbccbc_xlabels[2,rev(c(1,2,3)[-i])[j]], rbccbc_xlabels[3,rev(c(1,2,3)[-i])[j]]))  + theme_bw(base_size = 13)+  theme(axis.text.x = element_text( size = 12), axis.text.y = element_text( size = 12)))
 
       ##Boxplot with cbc grouped by over 3 rbc polymorphisms
       print(cbc_rbcpol_gg + geom_boxplot(aes_string(fill = rev(rbc_polymorphism[-i])[j]), position = position_dodge(0.9)) + scale_fill_manual(values = c("#999999", "#E69F00", "#20a2ee")) + facet_wrap(rbc_polymorphism[rbc_polymorphism != paste(rev(rbc_polymorphism[-i])[j]) & rbc_polymorphism != paste(rbc_polymorphism[i])]) )
